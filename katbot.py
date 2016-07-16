@@ -5,6 +5,7 @@ import time
 import bs4
 import requests
 import telepot
+import heroku
 
 token = open('token', 'r').read().strip()
 bot = telepot.Bot(token)
