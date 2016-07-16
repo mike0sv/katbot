@@ -7,6 +7,8 @@ import requests
 import telepot
 import heroku
 
+heroku.app.run(port=80w)
+
 token = open('token', 'r').read().strip()
 bot = telepot.Bot(token)
 
