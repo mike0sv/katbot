@@ -75,7 +75,7 @@ def web_setup():
             shutdown_server()
             return 'OK'
 
-        app.run()
+        app.run(port=80)
 
 
 def start_bot():
