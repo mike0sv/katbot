@@ -5,12 +5,14 @@ import time
 import bs4
 import requests
 import telepot
-import heroku
+from flask import Flask, request
 
-heroku.app.run(port=80w)
-
-token = open('token', 'r').read().strip()
-bot = telepot.Bot(token)
+try:
+    token = open('token', 'r').read().strip()
+    bot = telepot.Bot(token)
+except:
+    bot = None
+    token = None
 
 search_url = 'http://kat.cr/search'
 sorting_param = '/?field=seeders&order=desc'
@@ -42,15 +44,52 @@ def handle_message(msg):
 
     if content_type == 'text':
         try:
+            print(msg['text'])
             for out in get_first_magnet(msg['text']):
                 bot.sendMessage(chat_id, out)
         except:
-            # TODO send error message
-            raise
+            bot.sendMessage(chat_id, "Soryan, chot gluchu")
+
+app = None
+
+
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+
+
+def web_setup():
+    global app
+    if bot is None:
+        app = Flask(__name__)
+
+        @app.route('/setup')
+        def await_token():
+            global token, bot, app
+            token = request.args.get('token')
+            print('Got token', token)
+            bot = telepot.Bot(token)
+            start_bot()
+            shutdown_server()
+            return 'OK'
+
+        app.run()
+
+
+def start_bot():
+    print('Starting message loop')
+    bot.message_loop(handle_message)
 
 
 def main():
-    bot.message_loop(handle_message)
+    if bot is None:
+        print('Awaiting token')
+        web_setup()
+    else:
+        start_bot()
+
     while 1:
         time.sleep(10)
 
